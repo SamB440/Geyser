@@ -25,6 +25,8 @@
 
 package org.geysermc.geyser.entity.type;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,6 +43,7 @@ import org.cloudburstmc.protocol.bedrock.packet.MoveEntityAbsolutePacket;
 import org.cloudburstmc.protocol.bedrock.packet.MoveEntityDeltaPacket;
 import org.cloudburstmc.protocol.bedrock.packet.RemoveEntityPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SetEntityDataPacket;
+import org.geysermc.compatibility.anticheat.AntiCheatPluginMessageChannels;
 import org.geysermc.geyser.api.entity.type.GeyserEntity;
 import org.geysermc.geyser.entity.EntityDefinition;
 import org.geysermc.geyser.entity.GeyserDirtyMetadata;
@@ -53,6 +56,7 @@ import org.geysermc.geyser.util.EntityUtils;
 import org.geysermc.geyser.util.InteractionResult;
 import org.geysermc.geyser.util.InteractiveTag;
 import org.geysermc.geyser.util.MathUtils;
+import org.geysermc.geyser.util.PluginMessageUtils;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.EntityMetadata;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.Pose;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.BooleanEntityMetadata;
@@ -377,6 +381,22 @@ public class Entity implements GeyserEntity {
                 propertyManager.applyIntProperties(entityDataPacket.getProperties().getIntProperties());
                 propertyManager.applyFloatProperties(entityDataPacket.getProperties().getFloatProperties());
             }
+
+            if (session.getPlayerEntity().equals(this)) {
+                ObjectNode metadataNode = PluginMessageUtils.JACKSON.createObjectNode();
+                metadataNode.put("packet", "metadata");
+                final ObjectNode dataNode = PluginMessageUtils.JACKSON.createObjectNode();
+                dataNode.put("gliding", session.getPlayerEntity().isGliding());
+                dataNode.put("swimming", session.getPlayerEntity().getFlag(EntityFlag.SWIMMING));
+                dataNode.put("sprinting", session.getPlayerEntity().getFlag(EntityFlag.SPRINTING));
+                metadataNode.set("data", dataNode);
+                try {
+                    PluginMessageUtils.sendMessage(session, AntiCheatPluginMessageChannels.SEND, PluginMessageUtils.JACKSON.writeValueAsBytes(metadataNode));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
             session.sendUpstreamPacket(entityDataPacket);
         }
     }

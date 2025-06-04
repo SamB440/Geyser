@@ -29,6 +29,7 @@ import net.kyori.adventure.key.Key;
 import org.cloudburstmc.protocol.bedrock.data.GameRuleData;
 import org.cloudburstmc.protocol.bedrock.packet.GameRulesChangedPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SetPlayerGameTypePacket;
+import org.geysermc.compatibility.anticheat.AntiCheatPluginMessageChannels;
 import org.geysermc.erosion.Constants;
 import org.geysermc.floodgate.pluginmessage.PluginMessageChannels;
 import org.geysermc.geyser.api.network.AuthType;
@@ -126,6 +127,7 @@ public class JavaLoginTranslator extends PacketTranslator<ClientboundLoginPacket
             session.sendDownstreamPacket(new ServerboundCustomPayloadPacket(register, PluginMessageChannels.getFloodgateRegisterData()));
         }
         session.sendDownstreamPacket(new ServerboundCustomPayloadPacket(register, Constants.PLUGIN_MESSAGE.getBytes(StandardCharsets.UTF_8)));
+        session.sendDownstreamPacket(new ServerboundCustomPayloadPacket(register, AntiCheatPluginMessageChannels.getAnticheatRegisterData()));
 
         if (session.getBedrockDimension().bedrockId() != newDimension.bedrockId()) {
             DimensionUtils.switchDimension(session, newDimension);

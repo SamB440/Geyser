@@ -183,10 +183,10 @@ public class CollisionManager {
         Vector3d startingPos = playerBoundingBox.getBottomCenter();
         Vector3d movement = position.sub(startingPos);
         Vector3d adjustedMovement = correctPlayerMovement(movement, false, teleported);
-        playerBoundingBox.translate(adjustedMovement.getX(), adjustedMovement.getY(), adjustedMovement.getZ());
+        playerBoundingBox.translate(movement.getX(), movement.getY(), movement.getZ());
         playerBoundingBox.translate(pistonCache.getPlayerMotion().getX(), pistonCache.getPlayerMotion().getY(), pistonCache.getPlayerMotion().getZ());
         // Correct player position
-        if (!correctPlayerPosition()) {
+        if (false && !correctPlayerPosition()) {
             // Cancel the movement if it needs to be cancelled
             recalculatePosition();
             return null;
@@ -199,20 +199,20 @@ public class CollisionManager {
 
         position = playerBoundingBox.getBottomCenter();
 
-        boolean newOnGround = adjustedMovement.getY() != movement.getY() && movement.getY() < 0 || onGround;
+//        boolean newOnGround = adjustedMovement.getY() != movement.getY() && movement.getY() < 0 || onGround;
         // Send corrected position to Bedrock if they differ by too much to prevent de-syncs
-        if (onGround != newOnGround || movement.distanceSquared(adjustedMovement) > INCORRECT_MOVEMENT_THRESHOLD) {
-            PlayerEntity playerEntity = session.getPlayerEntity();
-            // Client will dismount if on a vehicle
-            if (playerEntity.getVehicle() == null && pistonCache.getPlayerMotion().equals(Vector3f.ZERO) && !pistonCache.isPlayerSlimeCollision()) {
-                playerEntity.moveAbsolute(position.toFloat(), playerEntity.getYaw(), playerEntity.getPitch(), playerEntity.getHeadYaw(), onGround, true);
-            }
-        }
+//        if (onGround != newOnGround || movement.distanceSquared(adjustedMovement) > INCORRECT_MOVEMENT_THRESHOLD) {
+//            PlayerEntity playerEntity = session.getPlayerEntity();
+//            // Client will dismount if on a vehicle
+//            if (playerEntity.getVehicle() == null && pistonCache.getPlayerMotion().equals(Vector3f.ZERO) && !pistonCache.isPlayerSlimeCollision()) {
+//                playerEntity.moveAbsolute(position.toFloat(), playerEntity.getYaw(), playerEntity.getPitch(), playerEntity.getHeadYaw(), onGround, true);
+//            }
+//        }
 
-        if (!newOnGround) {
-            // Trim the position to prevent rounding errors that make Java think we are clipping into a block
-            position = Vector3d.from(position.getX(), Double.parseDouble(DECIMAL_FORMAT.format(position.getY())), position.getZ());
-        }
+//        if (!newOnGround) {
+//            // Trim the position to prevent rounding errors that make Java think we are clipping into a block
+//            position = Vector3d.from(position.getX(), Double.parseDouble(DECIMAL_FORMAT.format(position.getY())), position.getZ());
+//        }
 
         return new CollisionResult(position, TriState.byBoolean(onGround));
     }

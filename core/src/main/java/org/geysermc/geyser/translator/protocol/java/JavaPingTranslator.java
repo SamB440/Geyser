@@ -41,7 +41,7 @@ public class JavaPingTranslator extends PacketTranslator<ClientboundPingPacket> 
         // We use this once the client replies
         final int id = packet.getId();
 
-        if (!session.getGeyser().getConfig().isForwardPlayerPing()) {
+        if (false && !session.getGeyser().getConfig().isForwardPlayerPing()) {
             session.sendDownstreamPacket(new ServerboundPongPacket(id));
             return;
         }

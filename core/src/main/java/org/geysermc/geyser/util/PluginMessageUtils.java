@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import net.kyori.adventure.key.Key;
 import org.geysermc.geyser.GeyserImpl;
@@ -34,6 +35,9 @@ import org.geysermc.mcprotocollib.protocol.packet.common.serverbound.Serverbound
 import java.nio.ByteBuffer;
 
 public class PluginMessageUtils {
+
+    public static final ObjectMapper JACKSON = new ObjectMapper();
+
     private static final byte[] GEYSER_BRAND_DATA;
 
     static {
