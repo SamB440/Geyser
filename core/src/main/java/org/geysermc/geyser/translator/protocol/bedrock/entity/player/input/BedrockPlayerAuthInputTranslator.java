@@ -25,6 +25,9 @@
 
 package org.geysermc.geyser.translator.protocol.bedrock.entity.player.input;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cloudburstmc.math.GenericMath;
 import org.cloudburstmc.math.vector.Vector2f;
 import org.cloudburstmc.math.vector.Vector3f;
@@ -37,6 +40,7 @@ import org.cloudburstmc.protocol.bedrock.packet.AnimatePacket;
 import org.cloudburstmc.protocol.bedrock.packet.LevelEventPacket;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerAuthInputPacket;
 import org.cloudburstmc.protocol.bedrock.packet.UpdateAttributesPacket;
+import org.geysermc.compatibility.anticheat.AntiCheatPluginMessageChannels;
 import org.geysermc.geyser.entity.EntityDefinitions;
 import org.geysermc.geyser.entity.type.BoatEntity;
 import org.geysermc.geyser.entity.type.Entity;
@@ -52,6 +56,7 @@ import org.geysermc.geyser.translator.protocol.PacketTranslator;
 import org.geysermc.geyser.translator.protocol.Translator;
 import org.geysermc.geyser.translator.protocol.bedrock.BedrockInventoryTransactionTranslator;
 import org.geysermc.geyser.util.CooldownUtils;
+import org.geysermc.geyser.util.PluginMessageUtils;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.GameMode;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.Hand;
@@ -195,6 +200,22 @@ public final class BedrockPlayerAuthInputTranslator extends PacketTranslator<Pla
                     CooldownUtils.sendCooldown(session);
                 }
             }
+        }
+
+        ObjectNode inputNode = PluginMessageUtils.JACKSON.createObjectNode();
+        inputNode.put("packet", "input_data");
+        final ObjectNode inputDataNode = PluginMessageUtils.JACKSON.createObjectNode();
+        ArrayNode inputArray = PluginMessageUtils.JACKSON.createArrayNode();
+        for (PlayerAuthInputData inputDatum : packet.getInputData()) {
+            inputArray.add(inputDatum.name());
+        }
+        inputDataNode.set("inputs", inputArray);
+        inputDataNode.put("mode", packet.getInputMode().name());
+        inputNode.set("data", inputDataNode);
+        try {
+            PluginMessageUtils.sendMessage(session, AntiCheatPluginMessageChannels.RECEIVE, PluginMessageUtils.JACKSON.writeValueAsBytes(inputNode));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
 
         // Vehicle input is send before player movement
